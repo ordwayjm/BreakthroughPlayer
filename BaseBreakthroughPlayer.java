@@ -1,8 +1,9 @@
 /**
  * 
  */
-package breakthrough;
+package BreakthroughPlayer;
 
+import breakthrough.*;
 import game.*;
 
 /**
