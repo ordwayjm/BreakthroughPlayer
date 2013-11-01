@@ -32,7 +32,7 @@ public class BreakthroughPlayer extends BaseBreakthroughPlayer {
 		super(n, false);
 	}
 
-	public BreakthroughMove[] getMoves(BreakthroughState board, char who) {
+	public ArrayList <BreakthroughMove> getMoves(BreakthroughState board, char who) {
 		ArrayList<BreakthroughMove> moves = new ArrayList<BreakthroughMove>();
 		for(int i = 0; i < board.N; i++){
 			for(int j = 0; i < board.N; i++){
@@ -51,7 +51,7 @@ public class BreakthroughPlayer extends BaseBreakthroughPlayer {
 				}
 			}
 		}
-		return mvStack;
+		return moves;
 	}
 	
 	public boolean possibleMove(BreakthroughState board, char who, int r1, int c1, int r2, int c2){
