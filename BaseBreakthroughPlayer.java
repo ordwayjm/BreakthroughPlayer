@@ -63,7 +63,7 @@ public abstract class BaseBreakthroughPlayer extends GamePlayer{
 	 * @param brd board to be evaluated
 	 * @return home evaluation - away evaluation
 	 */
-	private static int evalBoard(BreakthroughState brd){
+	protected static int evalBoard(BreakthroughState brd){
 		return eval(brd, BreakthroughState.homeSym) - eval(brd,BreakthroughState.awaySym);
 	}
 }

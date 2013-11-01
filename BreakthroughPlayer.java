@@ -4,7 +4,7 @@ import connect4.Connect4Move;
 import game.*;
 import breakthrough.*;
 
-public class BreakthroughPlayer extends GamePlayer {
+public class BreakthroughPlayer extends BaseBreakthroughPlayer {
 
 	protected ScoredBreakthroughMove[] mvStack;
 
@@ -27,7 +27,7 @@ public class BreakthroughPlayer extends GamePlayer {
 	}
 
 	public BreakthroughPlayer(String n) {
-		super(n, new BreakthroughState(), false);
+		super(n, false);
 	}
 
 	public BreakthroughMove[] getMoves(BreakthroughState board) {
@@ -45,10 +45,10 @@ public class BreakthroughPlayer extends GamePlayer {
 		if(status == GameState.Status.HOME_WIN) {
 			move.set(0,0,0,0, Double.POSITIVE_INFINITY);
 			isTerminal = true;
-		}else if(status == GameState.Status.AWAY_WIN) {
+		} else if(status == GameState.Status.AWAY_WIN) {
 			move.set(0,0,0,0, Double.NEGATIVE_INFINITY);
 			isTerminal = true;
-		}else if(depth < depthLimit) {
+		} else if(depth < depthLimit) {
 			move.set(0,0,0,0,0);
 			isTerminal = true;
 		}
@@ -61,6 +61,8 @@ public class BreakthroughPlayer extends GamePlayer {
 		double bestValue;
 		if(isTerminal) {
 			;
+		} else if(depth == depthLimit) {
+			 mvStack[depth].set(0,0,0,0, evalBoard(board));
 		}
 		if(toMaximize) {
 			bestValue = Double.NEGATIVE_INFINITY;
