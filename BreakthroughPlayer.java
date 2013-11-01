@@ -103,7 +103,7 @@ public class BreakthroughPlayer extends BaseBreakthroughPlayer {
 		if(toMaximize) {
 			bestValue = Double.NEGATIVE_INFINITY;
 			bestMove.set(0,0,0,0,bestValue);
-			for(BreakthroughMove mv : getMoves(board, GameState.Who.HOME)) {
+			for(BreakthroughMove mv : getMoves(board, BreakthroughState.homeSym)) {
 				BreakthroughState temp = makeMove(board, mv);
 				minimax(temp, depth + 1, depthLimit);
 				if(mvStack[depth+1].score > bestMove.score) {
@@ -113,7 +113,7 @@ public class BreakthroughPlayer extends BaseBreakthroughPlayer {
 		} else {
 			bestValue = Double.POSITIVE_INFINITY;
 			bestMove.set(0,0,0,0, bestValue);
-			for(BreakthroughMove mv : getMoves(board, )) {
+			for(BreakthroughMove mv : getMoves(board, BreakthroughState.awaySym)) {
 				BreakthroughState temp = makeMove(board, mv);
 				minimax(temp, depth + 1, depthLimit);
 				if (mvStack[depth+1].score < bestMove.score) {
