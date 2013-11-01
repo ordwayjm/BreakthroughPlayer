@@ -20,6 +20,7 @@ public class BreakthroughPlayer extends GamePlayer {
 	}
 	
 	public BreakthroughState makeMove(BreakthroughState board, BreakthroughMove move) {
+		board.makeMove(move);
 		return board;
 	}
 	
@@ -34,8 +35,7 @@ public class BreakthroughPlayer extends GamePlayer {
 				BreakthroughState temp = makeMove(board, mv);
 				minimax(temp, depth - 1, false, depthLimit);
 			}
-		}
-		else {
+		} else {
 			bestValue = Double.POSITIVE_INFINITY;
 			for(BreakthroughMove mv : getMoves(board)) {
 				BreakthroughState temp = makeMove(board, mv);
