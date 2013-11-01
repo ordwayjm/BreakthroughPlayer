@@ -59,11 +59,36 @@ public abstract class BaseBreakthroughPlayer extends GamePlayer{
 	}
 	
 	/**
+	 * Very simple eval function. Having more pieces is good. Thus, it will capture when possible.
+	 * @param brd
+	 * @param who
+	 * @return
+	 */
+	private static int eval2(BreakthroughState brd, char who){
+		int score = 0;
+		for(int i = 0; i < N; i++){
+			for(int j = 0; j < N; j++){
+				if(brd.board[i][j] == who) score++;
+			}
+		}
+		return score;
+	}
+	
+	/**
 	 * The evaluation function
 	 * @param brd board to be evaluated
 	 * @return home evaluation - away evaluation
 	 */
 	protected static int evalBoard(BreakthroughState brd){
 		return eval(brd, BreakthroughState.homeSym) - eval(brd,BreakthroughState.awaySym);
+	}
+	
+	/**
+	 * Auxiliary evaluation function
+	 * @param brd
+	 * @return home eval - away eval based on number of remaining pieces
+	 */
+	private static int evalBoard2(BreakthroughState brd){
+		return eval2(brd, BreakthroughState.homeSym) - eval(brd, BreakthroughState.awaySym);
 	}
 }
