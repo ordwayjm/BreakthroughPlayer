@@ -8,7 +8,7 @@ import breakthrough.*;
 public class BreakthroughPlayer extends BaseBreakthroughPlayer {
 
 	protected ScoredBreakthroughMove[] mvStack;
-	public final int DEPTH_LIMIT = 15;
+	public final int DEPTH_LIMIT = 10;
 
 	protected class ScoredBreakthroughMove extends BreakthroughMove {
 		public ScoredBreakthroughMove(int r1, int c1, int r2, int c2, double s) {
@@ -96,11 +96,11 @@ public class BreakthroughPlayer extends BaseBreakthroughPlayer {
 		if(isTerminal) {
 			;
 		} else if(depth == depthLimit) {
-			 mvStack[depth].set(0,0,0,0, evalBoard(board));
+			 mvStack[depth].set(0,0,0,0, evalBoard2(board));
 		}
 		ScoredBreakthroughMove bestMove = mvStack[depth];
 		if(toMaximize) {
-			bestValue = Double.POSITIVE_INFINITY;
+			bestValue = Double.NEGATIVE_INFINITY;
 			bestMove.set(0,0,0,0,bestValue);
 			for(BreakthroughMove mv : getMoves(board, BreakthroughState.homeSym)) {
 				BreakthroughState temp = makeMove(board, mv);
@@ -110,7 +110,7 @@ public class BreakthroughPlayer extends BaseBreakthroughPlayer {
 				}
 			}
 		} else {
-			bestValue = Double.NEGATIVE_INFINITY;
+			bestValue = Double.POSITIVE_INFINITY;
 			bestMove.set(0,0,0,0, bestValue);
 			for(BreakthroughMove mv : getMoves(board, BreakthroughState.awaySym)) {
 				BreakthroughState temp = makeMove(board, mv);

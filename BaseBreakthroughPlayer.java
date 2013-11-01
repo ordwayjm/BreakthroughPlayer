@@ -88,7 +88,7 @@ public abstract class BaseBreakthroughPlayer extends GamePlayer{
 	 * @param brd
 	 * @return home eval - away eval based on number of remaining pieces
 	 */
-	private static int evalBoard2(BreakthroughState brd){
+	protected static int evalBoard2(BreakthroughState brd){
 		return eval2(brd, BreakthroughState.homeSym) - eval(brd, BreakthroughState.awaySym);
 	}
 }
