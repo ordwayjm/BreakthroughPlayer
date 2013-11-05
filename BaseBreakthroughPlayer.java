@@ -78,6 +78,14 @@ public abstract class BaseBreakthroughPlayer extends GamePlayer {
 			endingCol = c2;
 			score = s;
 		}
+		
+		public void set(BreakthroughMove m, double s) {
+			startRow = m.startRow;
+			startCol = m.startCol;
+			endingRow = m.endingRow;
+			endingCol = m.endingCol;
+			score = s;
+		}
 	};
 	
 	public BaseBreakthroughPlayer(String name, boolean deterministic){
