@@ -5,12 +5,12 @@ import game.*;
 import breakthrough.*;
 
 public class BreakthroughPlayer extends BaseBreakthroughPlayer {
-
-	protected ScoredBreakthroughMove[] mvStack;
-	public final int DEPTH_LIMIT = 20;
-
+	
+	public final int DEPTH_LIMIT = 1;
+	protected ScoredBreakthroughMove[] mvStack = new ScoredBreakthroughMove[DEPTH_LIMIT + 1];
+	
 	public BreakthroughPlayer(String n) {
-		super(n, false);
+		super(n, true);
 	}
 
 	public ArrayList <BreakthroughMove> getMoves(BreakthroughState board, char who) {
@@ -54,36 +54,33 @@ public class BreakthroughPlayer extends BaseBreakthroughPlayer {
 		return board;
 	}
 
-	public boolean isTerminal(BreakthroughState board, ScoredBreakthroughMove move, int depth, int depthLimit) {
+	public boolean isTerminal(BreakthroughState board, ScoredBreakthroughMove move) {
 		GameState.Status status = board.getStatus();
-		boolean isTerminal = false;
+		boolean isTerminal = true;
 		if(status == GameState.Status.HOME_WIN) {
 			move.set(0,0,0,0, Double.POSITIVE_INFINITY);
-			isTerminal = true;
 		} else if(status == GameState.Status.AWAY_WIN) {
 			move.set(0,0,0,0, Double.NEGATIVE_INFINITY);
-			isTerminal = true;
-		} else if(depth < depthLimit) {
-			move.set(0,0,0,0,0);
-			isTerminal = true;
 		}
+		else isTerminal = false;
 		return isTerminal;
 	}
 
 	public void minimax(BreakthroughState board, int depth, int depthLimit) {
 		boolean toMaximize = (board.getWho() == GameState.Who.HOME);		
-		boolean isTerminal = isTerminal(board, mvStack[depth], depth, depthLimit);
+		boolean isTerminal = isTerminal(board, mvStack[depth]);
 		double bestValue;
 		if(isTerminal) {
 			;
 		} else if(depth == depthLimit) {
-			 mvStack[depth].set(0,0,0,0, evalBoard3(board));
+			 mvStack[depth].set(0,0,0,0, evalBoard2(board));
 		}
 		ScoredBreakthroughMove bestMove = mvStack[depth];
 		if(toMaximize) {
 			bestValue = Double.NEGATIVE_INFINITY;
 			bestMove.set(0,0,0,0,bestValue);
-			for(BreakthroughMove mv : getMoves(board, BreakthroughState.homeSym)) {
+			ArrayList<BreakthroughMove> moves = getMoves(board, BreakthroughState.homeSym);
+			for(BreakthroughMove mv : moves) {
 				BreakthroughState temp = makeMove(board, mv);
 				minimax(temp, depth + 1, depthLimit);
 				if(mvStack[depth+1].score > bestMove.score) {
@@ -93,7 +90,8 @@ public class BreakthroughPlayer extends BaseBreakthroughPlayer {
 		} else {
 			bestValue = Double.POSITIVE_INFINITY;
 			bestMove.set(0,0,0,0, bestValue);
-			for(BreakthroughMove mv : getMoves(board, BreakthroughState.awaySym)) {
+			ArrayList<BreakthroughMove> moves = getMoves(board, BreakthroughState.awaySym);
+			for(BreakthroughMove mv : moves) {
 				BreakthroughState temp = makeMove(board, mv);
 				minimax(temp, depth + 1, depthLimit);
 				if(mvStack[depth+1].score < bestMove.score) {
@@ -101,7 +99,7 @@ public class BreakthroughPlayer extends BaseBreakthroughPlayer {
 				}
 			}
 		}
-		mvStack[0] = bestMove;
+		mvStack[depth] = bestMove;
 	}
 
 	public GameMove getMove(GameState state, String lastMove) {
@@ -110,7 +108,7 @@ public class BreakthroughPlayer extends BaseBreakthroughPlayer {
 	}
 
 	public static void main(String [] args) {
-		GamePlayer p = new RandomBreakthroughPlayer("Test Breakthrough");
+		GamePlayer p = new BreakthroughPlayer("Test Breakthrough");
 		p.compete(args);
 	}
 }
