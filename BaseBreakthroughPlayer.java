@@ -14,54 +14,6 @@ public abstract class BaseBreakthroughPlayer extends GamePlayer {
 	
 	public static int N = BreakthroughState.N;
 	public static int WINNING_SCORE = 100000;
-	public static int PIECE_SCORE = 100;
-	public static int BACK_ROW_SCORE = 20;
-	
-	protected static class BreakthroughPiece {
-
-		public double score;
-		public int row, col;
-		public GameState.Who who;
-
-		protected BreakthroughPiece(int row, int col, GameState.Who who) {
-			this.row = row;
-			this.col = col;
-			this.who = who;
-			this.score = evaluate();
-		}
-
-		private double evaluate() {
-			return winner() + distanceFromWin() + inBackRow();
-		}
-		
-		private int distanceFromWin() {
-			if(who == GameState.Who.HOME)
-				return N - row;
-			else return row;
-		}
-
-		private int winner() {
-			if(who == GameState.Who.HOME) {
-				if(row == N-1)
-					return WINNING_SCORE;
-			} else {
-				if(row == 0)
-					return WINNING_SCORE;
-			}
-			return 0;
-		}
-		
-		private int inBackRow() {
-			if(who == GameState.Who.HOME) {
-				if (row == 0)
-					return BACK_ROW_SCORE;
-			} else {
-				if(row == N-1)
-					return BACK_ROW_SCORE;
-			}
-			return 0;
-		}
-	};
 	
 	protected class ScoredBreakthroughMove extends BreakthroughMove {
 		public double score;
@@ -86,7 +38,7 @@ public abstract class BaseBreakthroughPlayer extends GamePlayer {
 			endingCol = m.endingCol;
 			score = s;
 		}
-	};
+	}
 	
 	public BaseBreakthroughPlayer(String name, boolean deterministic){
 		super(name, new BreakthroughState(), deterministic);
@@ -164,24 +116,5 @@ public abstract class BaseBreakthroughPlayer extends GamePlayer {
 	 */
 	protected static int evalBoard2(BreakthroughState brd){
 		return eval2(brd, BreakthroughState.homeSym) - eval2(brd, BreakthroughState.awaySym);
-	}
-	
-	protected static double evalBoard3(BreakthroughState brd) {
-		double playerScore = 0;
-		double opponentScore = 0;
-		char player = brd.who == GameState.Who.AWAY ? BreakthroughState.awaySym : BreakthroughState.homeSym;
-		for(int i = 0; i < N; i++) {
-			for(int j = 0; j < N; j++) {
-				if(brd.board[i][j] == player) {
-					BreakthroughPiece piece = new BreakthroughPiece(i, j, brd.who);
-					playerScore += piece.score;
-				}
-				else if(brd.board[i][j] != BreakthroughState.emptySym){
-					BreakthroughPiece piece = new BreakthroughPiece(i, j, brd.who);
-					opponentScore += piece.score;
-				}
-			}
-		}
-		return playerScore - opponentScore;
 	}
 }

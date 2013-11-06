@@ -1,18 +1,23 @@
 package BreakthroughPlayer;
 
 import java.util.ArrayList;
-
 import game.*;
 import breakthrough.*;
 
 public class BreakthroughPlayer extends BaseBreakthroughPlayer {
 	
-	public final int DEPTH_LIMIT = 10;
-	protected ScoredBreakthroughMove[] mvStack = new ScoredBreakthroughMove[DEPTH_LIMIT + 1];
+	public final int DEPTH_LIMIT = 2;
+	public final int MAX_DEPTH = 50;
+	protected ScoredBreakthroughMove[] mvStack;
 	
 	public BreakthroughPlayer(String n) {
 		super(n, false);
-		for(int i = 0; i < mvStack.length; i++) {
+		init();
+	}
+	
+	public void init() {
+		mvStack = new ScoredBreakthroughMove[MAX_DEPTH];
+		for (int i=0; i<MAX_DEPTH; i++) {
 			mvStack[i] = new ScoredBreakthroughMove(0,0,0,0,0);
 		}
 	}
@@ -54,16 +59,17 @@ public class BreakthroughPlayer extends BaseBreakthroughPlayer {
 	}
 
 	public BreakthroughState makeMove(BreakthroughState board, BreakthroughMove move) {
-		board.makeMove(move);
-		return board;
+		BreakthroughState brd = board;
+		brd.makeMove(move);
+		return brd;
 	}
 
-	public boolean isTerminal(BreakthroughState board, ScoredBreakthroughMove move) {
+	public boolean isTerminal(BreakthroughState board, ScoredBreakthroughMove move, int depth, int depthLimit) {
 		GameState.Status status = board.getStatus();
 		boolean isTerminal = true;
 		if(status == GameState.Status.HOME_WIN) {
 			move.set(0,0,0,0, Double.POSITIVE_INFINITY);
-		} else if(status == GameState.Status.AWAY_WIN) {
+		}else if(status == GameState.Status.AWAY_WIN) {
 			move.set(0,0,0,0, Double.NEGATIVE_INFINITY);
 		}
 		else isTerminal = false;
@@ -72,36 +78,34 @@ public class BreakthroughPlayer extends BaseBreakthroughPlayer {
 
 	public void minimax(BreakthroughState board, int depth, int depthLimit) {
 		boolean toMaximize = (board.getWho() == GameState.Who.HOME);		
-		boolean isTerminal = isTerminal(board, mvStack[depth]);
-		ScoredBreakthroughMove bestMove = mvStack[depth];
+		boolean isTerminal = isTerminal(board, mvStack[depth], depth, depthLimit);
 		if(isTerminal) {
 			;
 		} else if(depth == depthLimit) {
 			 mvStack[depth].set(0,0,0,0, evalBoard2(board));
-		}
-		else if(toMaximize) {
-			ArrayList<BreakthroughMove> moves = getMoves(board, BreakthroughState.homeSym);
-			//System.out.println(depth + " - " + getMoves(board, BreakthroughState.homeSym).size());
-			bestMove.set(moves.get(moves.size()-1), Double.NEGATIVE_INFINITY);
-			for(BreakthroughMove mv : moves) {
-				BreakthroughState temp = makeMove(board, mv);
-				minimax(temp, depth + 1, depthLimit);
-				if(mvStack[depth+1].score > bestMove.score) {
-					bestMove.set(mv.startRow, mv.startCol, mv.endingRow, mv.endingCol, mvStack[depth+1].score);
-				}
-			}
 		} else {
-			ArrayList<BreakthroughMove> moves = getMoves(board, BreakthroughState.awaySym);
-			bestMove.set(moves.get(moves.size()-1), Double.POSITIVE_INFINITY);
+			double bestScore = (board.getWho() == GameState.Who.HOME ? Double.NEGATIVE_INFINITY : Double.POSITIVE_INFINITY);
+			char who = (board.getWho() == GameState.Who.HOME ? BreakthroughState.homeSym : BreakthroughState.awaySym);
+			ArrayList<BreakthroughMove> moves = getMoves(board, who);
+			ScoredBreakthroughMove bestMove = mvStack[depth];
+			ScoredBreakthroughMove nextMove = mvStack[depth+1];
+			bestMove.set(0,0,0,0, bestScore);
 			for(BreakthroughMove mv : moves) {
-				BreakthroughState temp = makeMove(board, mv);
-				minimax(temp, depth + 1, depthLimit);
-				if(mvStack[depth+1].score < bestMove.score) {
-					bestMove.set(mv.startRow, mv.startCol, mv.endingRow, mv.endingCol, mvStack[depth+1].score);
+				minimax(makeMove((BreakthroughState)board.clone(), mv), depth + 1, depthLimit);
+				if(toMaximize && nextMove.score > bestMove.score) {
+					System.out.println("BEST MAX!!!");
+					System.out.println(bestMove.toString());
+					bestMove.set(mv, nextMove.score);
+					System.out.println(bestMove.toString());
+				}else if(!toMaximize && nextMove.score < bestMove.score) {
+					System.out.println("BEST MIN!!!");
+					System.out.println(bestMove.toString());
+					bestMove.set(mv, nextMove.score);
+					System.out.println(bestMove.toString());
 				}
+				mvStack[0] = bestMove;
 			}
 		}
-		mvStack[depth] = bestMove;
 	}
 
 	public GameMove getMove(GameState state, String lastMove) {
