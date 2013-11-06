@@ -6,7 +6,7 @@ import breakthrough.*;
 
 public class BreakthroughPlayer extends BaseBreakthroughPlayer {
 	
-	public final int DEPTH_LIMIT = 4;
+	public final int DEPTH_LIMIT = 6;
 	public final int MAX_DEPTH = 50;
 	protected ScoredBreakthroughMove[] mvStack;
 	
@@ -75,8 +75,9 @@ public class BreakthroughPlayer extends BaseBreakthroughPlayer {
 		return isTerminal;
 	}
 
-	public void minimax(BreakthroughState board, int depth, int depthLimit) {
-		boolean toMaximize = (board.getWho() == GameState.Who.HOME);		
+	public void minimax(BreakthroughState board, int depth, int depthLimit, double alpha, double beta) {
+		boolean toMaximize = (board.getWho() == GameState.Who.HOME);	
+		boolean toMinimize = !toMaximize;
 		boolean isTerminal = isTerminal(board, mvStack[depth], depth, depthLimit);
 		if(isTerminal) {
 			;
@@ -90,11 +91,22 @@ public class BreakthroughPlayer extends BaseBreakthroughPlayer {
 			ScoredBreakthroughMove nextMove = mvStack[depth+1];
 			bestMove.set(moves.get(0), bestScore);
 			for(BreakthroughMove mv : moves) {
-				minimax(makeMove((BreakthroughState)board.clone(), mv), depth + 1, depthLimit);
+				minimax(makeMove((BreakthroughState)board.clone(), mv), depth + 1, depthLimit, alpha, beta);
 				if(toMaximize && nextMove.score > bestMove.score) {
 					bestMove.set(mv, nextMove.score);
 				}else if(!toMaximize && nextMove.score < bestMove.score) {
 					bestMove.set(mv, nextMove.score);
+				}
+				if(toMinimize) {
+					beta = Math.min(bestMove.score, beta);
+					if (bestMove.score <= alpha || bestMove.score == Double.NEGATIVE_INFINITY) {
+						return;
+					}
+				} else {
+					alpha = Math.max(bestMove.score, alpha);
+					if (bestMove.score >= beta || bestMove.score == Double.POSITIVE_INFINITY) {
+						return;
+					}
 				}
 				mvStack[0] = bestMove;
 			}
@@ -102,7 +114,7 @@ public class BreakthroughPlayer extends BaseBreakthroughPlayer {
 	}
 
 	public GameMove getMove(GameState state, String lastMove) {
-		minimax((BreakthroughState) state, 0, DEPTH_LIMIT);
+		minimax((BreakthroughState) state, 0, DEPTH_LIMIT, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
 		return mvStack[0];
 	}
 
