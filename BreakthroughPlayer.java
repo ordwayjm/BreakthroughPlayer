@@ -12,17 +12,30 @@ public class BreakthroughPlayer extends BaseBreakthroughPlayer {
 	public final double MIN_SCORE = Double.NEGATIVE_INFINITY;
 	protected ScoredBreakthroughMove[] mvStack;
 	
+	/**
+	 * 
+	 * @param n
+	 */
 	public BreakthroughPlayer(String n) {
 		super(n, false);
 	}
 	
+	/**
+	 * 
+	 */
 	public void init() {
 		mvStack = new ScoredBreakthroughMove[MAX_DEPTH];
 		for(int i = 0; i < MAX_DEPTH; i++) {
 			mvStack[i] = new ScoredBreakthroughMove(0,0,0,0,0);
 		}
 	}
-
+	
+	/**
+	 * 
+	 * @param board
+	 * @param who
+	 * @return
+	 */
 	public ArrayList <BreakthroughMove> getMoves(BreakthroughState board, char who) {
 		ArrayList<BreakthroughMove> moves = new ArrayList<BreakthroughMove>();
 		for(int i = 0; i < N; i++){
@@ -44,6 +57,16 @@ public class BreakthroughPlayer extends BaseBreakthroughPlayer {
 		return moves;
 	}
 	
+	/**
+	 * 
+	 * @param board
+	 * @param who
+	 * @param r1
+	 * @param c1
+	 * @param r2
+	 * @param c2
+	 * @return
+	 */
 	public boolean possibleMove(BreakthroughState board, char who, int r1, int c1, int r2, int c2){
 		// Not possible if any index is off the board
 		if(r1 < 0 || c1 < 0 || r2 < 0 || c2 < 0 || r1 >= N || 
@@ -58,13 +81,27 @@ public class BreakthroughPlayer extends BaseBreakthroughPlayer {
 		else if(c1 == c2 && board.board[r2][c2] != BreakthroughState.emptySym) return false;
 		else return true;
 	}
-
+	
+	/**
+	 * 
+	 * @param board
+	 * @param move
+	 * @return
+	 */
 	public BreakthroughState makeMove(BreakthroughState board, BreakthroughMove move) {
 		BreakthroughState brd = board;
 		brd.makeMove(move);
 		return brd;
 	}
-
+	
+	/**
+	 * 
+	 * @param board
+	 * @param move
+	 * @param depth
+	 * @param depthLimit
+	 * @return
+	 */
 	public boolean isTerminal(BreakthroughState board, ScoredBreakthroughMove move, int depth, int depthLimit) {
 		GameState.Status status = board.getStatus();
 		boolean isTerminal = true;
@@ -76,7 +113,15 @@ public class BreakthroughPlayer extends BaseBreakthroughPlayer {
 		else isTerminal = false;
 		return isTerminal;
 	}
-
+	
+	/**
+	 * 
+	 * @param board
+	 * @param depth
+	 * @param depthLimit
+	 * @param alpha
+	 * @param beta
+	 */
 	public void alphabeta(BreakthroughState board, int depth, int depthLimit, double alpha, double beta) {
 		boolean toMaximize = (board.getWho() == GameState.Who.HOME);	
 		boolean toMinimize = !toMaximize;
@@ -114,14 +159,21 @@ public class BreakthroughPlayer extends BaseBreakthroughPlayer {
 			}
 		}
 	}
-
+	
+	/**
+	 * 
+	 */
 	public GameMove getMove(GameState state, String lastMove) {
 		alphabeta((BreakthroughState) state, 0, DEPTH_LIMIT, MIN_SCORE, MAX_SCORE);
 		return mvStack[0];
 	}
-
+	
+	/**
+	 * 
+	 * @param args
+	 */
 	public static void main(String [] args) {
-		GamePlayer p = new BreakthroughPlayer("Test Breakthrough");
+		GamePlayer p = new BreakthroughPlayer("Stonewall Jackson");
 		p.compete(args);
 	}
 }
