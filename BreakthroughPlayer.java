@@ -6,8 +6,10 @@ import breakthrough.*;
 
 public class BreakthroughPlayer extends BaseBreakthroughPlayer {
 	
-	public final int DEPTH_LIMIT = 6;
+	public final int DEPTH_LIMIT = 7;
 	public final int MAX_DEPTH = 50;
+	public final double MAX_SCORE = Double.POSITIVE_INFINITY;
+	public final double MIN_SCORE = Double.NEGATIVE_INFINITY;
 	protected ScoredBreakthroughMove[] mvStack;
 	
 	public BreakthroughPlayer(String n) {
@@ -67,9 +69,9 @@ public class BreakthroughPlayer extends BaseBreakthroughPlayer {
 		GameState.Status status = board.getStatus();
 		boolean isTerminal = true;
 		if(status == GameState.Status.HOME_WIN) {
-			move.set(0,0,0,0, Double.POSITIVE_INFINITY);
+			move.set(0,0,0,0, MAX_SCORE);
 		}else if(status == GameState.Status.AWAY_WIN) {
-			move.set(0,0,0,0, Double.NEGATIVE_INFINITY);
+			move.set(0,0,0,0, MIN_SCORE);
 		}
 		else isTerminal = false;
 		return isTerminal;
@@ -84,7 +86,7 @@ public class BreakthroughPlayer extends BaseBreakthroughPlayer {
 		} else if(depth == depthLimit) {
 			 mvStack[depth].set(0,0,0,0, evalBoard2(board));
 		} else {
-			double bestScore = (board.getWho() == GameState.Who.HOME ? Double.NEGATIVE_INFINITY : Double.POSITIVE_INFINITY);
+			double bestScore = (board.getWho() == GameState.Who.HOME ? MIN_SCORE: MAX_SCORE);
 			char who = (board.getWho() == GameState.Who.HOME ? BreakthroughState.homeSym : BreakthroughState.awaySym);
 			ArrayList<BreakthroughMove> moves = getMoves(board, who);
 			ScoredBreakthroughMove bestMove = mvStack[depth];
@@ -99,21 +101,22 @@ public class BreakthroughPlayer extends BaseBreakthroughPlayer {
 				}
 				if(toMinimize) {
 					beta = Math.min(bestMove.score, beta);
-					if (bestMove.score <= alpha || bestMove.score == Double.NEGATIVE_INFINITY) {
+					if (bestMove.score <= alpha || bestMove.score == MIN_SCORE) {
 						return;
 					}
 				} else {
 					alpha = Math.max(bestMove.score, alpha);
-					if (bestMove.score >= beta || bestMove.score == Double.POSITIVE_INFINITY) {
+					if (bestMove.score >= beta || bestMove.score == MAX_SCORE) {
 						return;
 					}
 				}
+				mvStack[depth] = bestMove;
 			}
 		}
 	}
 
 	public GameMove getMove(GameState state, String lastMove) {
-		alphabeta((BreakthroughState) state, 0, DEPTH_LIMIT, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+		alphabeta((BreakthroughState) state, 0, DEPTH_LIMIT, MIN_SCORE, MAX_SCORE);
 		return mvStack[0];
 	}
 
