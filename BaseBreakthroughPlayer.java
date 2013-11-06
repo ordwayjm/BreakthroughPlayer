@@ -93,8 +93,23 @@ public abstract class BaseBreakthroughPlayer extends GamePlayer {
 	private static int eval2(BreakthroughState brd, char who){
 		int score = 0;
 		for(int i = 0; i < N; i++){
-			for(int j = 0; j < N; j++){
-				if(brd.board[i][j] == who) score++;
+			// If checking first row for away, any piece means a win (2N+1 points, more than could otherwise be acquired).
+			if(i == 0 && who == BreakthroughState.awaySym){
+				for(int j = 0; j < N; j++){
+					if(brd.board[i][j] == who) score += ((2*N)+1);
+				}
+			}
+			// If checking last row for home, any piece means a win.
+			else if(i == N-1 && who == BreakthroughState.homeSym){
+				for(int j = 0; j < N; j++){
+					if(brd.board[i][j] == who) score += ((2*N)+1);
+				}
+			}
+			// In any other row, a piece is just one heuristic point.
+			else{
+				for(int j = 0; j < N; j++){
+					if(brd.board[i][j] == who) score++;
+				}
 			}
 		}
 		return score;
