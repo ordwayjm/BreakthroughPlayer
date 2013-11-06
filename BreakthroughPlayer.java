@@ -6,18 +6,17 @@ import breakthrough.*;
 
 public class BreakthroughPlayer extends BaseBreakthroughPlayer {
 	
-	public final int DEPTH_LIMIT = 2;
+	public final int DEPTH_LIMIT = 4;
 	public final int MAX_DEPTH = 50;
 	protected ScoredBreakthroughMove[] mvStack;
 	
 	public BreakthroughPlayer(String n) {
 		super(n, false);
-		init();
 	}
 	
 	public void init() {
 		mvStack = new ScoredBreakthroughMove[MAX_DEPTH];
-		for (int i=0; i<MAX_DEPTH; i++) {
+		for (int i = 0; i < MAX_DEPTH; i++) {
 			mvStack[i] = new ScoredBreakthroughMove(0,0,0,0,0);
 		}
 	}
@@ -89,19 +88,13 @@ public class BreakthroughPlayer extends BaseBreakthroughPlayer {
 			ArrayList<BreakthroughMove> moves = getMoves(board, who);
 			ScoredBreakthroughMove bestMove = mvStack[depth];
 			ScoredBreakthroughMove nextMove = mvStack[depth+1];
-			bestMove.set(0,0,0,0, bestScore);
+			bestMove.set(moves.get(0), bestScore);
 			for(BreakthroughMove mv : moves) {
 				minimax(makeMove((BreakthroughState)board.clone(), mv), depth + 1, depthLimit);
 				if(toMaximize && nextMove.score > bestMove.score) {
-					System.out.println("BEST MAX!!!");
-					System.out.println(bestMove.toString());
 					bestMove.set(mv, nextMove.score);
-					System.out.println(bestMove.toString());
 				}else if(!toMaximize && nextMove.score < bestMove.score) {
-					System.out.println("BEST MIN!!!");
-					System.out.println(bestMove.toString());
 					bestMove.set(mv, nextMove.score);
-					System.out.println(bestMove.toString());
 				}
 				mvStack[0] = bestMove;
 			}
