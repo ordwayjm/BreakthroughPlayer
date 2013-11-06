@@ -75,7 +75,7 @@ public class BreakthroughPlayer extends BaseBreakthroughPlayer {
 		return isTerminal;
 	}
 
-	public void minimax(BreakthroughState board, int depth, int depthLimit, double alpha, double beta) {
+	public void alphabeta(BreakthroughState board, int depth, int depthLimit, double alpha, double beta) {
 		boolean toMaximize = (board.getWho() == GameState.Who.HOME);	
 		boolean toMinimize = !toMaximize;
 		boolean isTerminal = isTerminal(board, mvStack[depth], depth, depthLimit);
@@ -91,7 +91,7 @@ public class BreakthroughPlayer extends BaseBreakthroughPlayer {
 			ScoredBreakthroughMove nextMove = mvStack[depth+1];
 			bestMove.set(moves.get(0), bestScore);
 			for(BreakthroughMove mv : moves) {
-				minimax(makeMove((BreakthroughState)board.clone(), mv), depth + 1, depthLimit, alpha, beta);
+				alphabeta(makeMove((BreakthroughState)board.clone(), mv), depth + 1, depthLimit, alpha, beta);
 				if(toMaximize && nextMove.score > bestMove.score) {
 					bestMove.set(mv, nextMove.score);
 				}else if(!toMaximize && nextMove.score < bestMove.score) {
@@ -108,13 +108,12 @@ public class BreakthroughPlayer extends BaseBreakthroughPlayer {
 						return;
 					}
 				}
-				mvStack[0] = bestMove;
 			}
 		}
 	}
 
 	public GameMove getMove(GameState state, String lastMove) {
-		minimax((BreakthroughState) state, 0, DEPTH_LIMIT, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+		alphabeta((BreakthroughState) state, 0, DEPTH_LIMIT, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
 		return mvStack[0];
 	}
 
