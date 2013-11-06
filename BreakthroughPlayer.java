@@ -16,7 +16,7 @@ public class BreakthroughPlayer extends BaseBreakthroughPlayer {
 	
 	public void init() {
 		mvStack = new ScoredBreakthroughMove[MAX_DEPTH];
-		for (int i = 0; i < MAX_DEPTH; i++) {
+		for(int i = 0; i < MAX_DEPTH; i++) {
 			mvStack[i] = new ScoredBreakthroughMove(0,0,0,0,0);
 		}
 	}
