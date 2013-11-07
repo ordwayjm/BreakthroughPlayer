@@ -276,8 +276,8 @@ public class ThreadedBreakthroughPlayer extends BaseBreakthroughPlayer implement
 		double bestScore = threads[0].mvStack[0].score;
 		int bestIndex = 0;
 		for(int i = 0; i < NUM_THREADS; i++){
-			if(board.getWho() == GameState.Who.HOME && threads[i].mvStack[0].score > bestScore) bestIndex = i;
-			else if(board.getWho() == GameState.Who.AWAY && threads[i].mvStack[0].score < bestScore) bestIndex = i;
+			if(state.getWho() == GameState.Who.HOME && threads[i].mvStack[0].score > bestScore) bestIndex = i;
+			else if(state.getWho() == GameState.Who.AWAY && threads[i].mvStack[0].score < bestScore) bestIndex = i;
 		}
 		
 		mvStack[0] = threads[bestIndex].mvStack[0];
