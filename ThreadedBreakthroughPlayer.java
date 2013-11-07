@@ -2,24 +2,63 @@ package BreakthroughPlayer;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.concurrent.CountDownLatch;
+
 import game.*;
 import breakthrough.*;
 
-public class BreakthroughPlayer extends BaseBreakthroughPlayer {
+public class ThreadedBreakthroughPlayer extends BaseBreakthroughPlayer implements Runnable{
+	
 	
 	public final int DEPTH_LIMIT = 7;
 	public final int MAX_DEPTH = 50;
+	public static final int NUM_THREADS = 4;
 	public final double MAX_SCORE = Double.POSITIVE_INFINITY;
 	public final double MIN_SCORE = Double.NEGATIVE_INFINITY;
+	
 	protected ScoredBreakthroughMove[] mvStack;
+	protected int threadID, startIndex, endIndex;
+	protected BreakthroughState board;
+	
+	static CountDownLatch threadLatch = new CountDownLatch(NUM_THREADS);
+	
 	static PrintWriter writer;
 	
 	/**
 	 * 
 	 * @param n
 	 */
-	public BreakthroughPlayer(String n) {
+	public ThreadedBreakthroughPlayer(String n) {
 		super(n, false);
+		startIndex = 0;
+		endIndex = 0;
+		threadID = 0;
+	}
+	
+	public ThreadedBreakthroughPlayer(String n, BreakthroughState brd, int id, int moveCount){
+		super(n, false);
+		
+		threadID = id;
+		// Start at ID times width of one thread's portion of possible moves
+		startIndex = id*(moveCount/NUM_THREADS);
+		// End at the next start index or at the number of moves. Exclusive either way.
+		endIndex = Math.min((moveCount), startIndex+(moveCount/NUM_THREADS));
+		board = (BreakthroughState) brd.clone();
+		
+		mvStack = new ScoredBreakthroughMove[MAX_DEPTH];
+		for(int i = 0; i < MAX_DEPTH; i++) {
+			mvStack[i] = new ScoredBreakthroughMove(0,0,0,0,0);
+		}
+	}
+	
+	// TODO: Implement the run() method to run alphabetaThreaded on appropriate indices and get best move into mvstack[0]
+	public void run(){
+		alphabetaThreaded(board, 0, DEPTH_LIMIT, MIN_SCORE, MAX_SCORE, startIndex, endIndex);
+		writer.println("Thread number " + threadID + " found move:");
+		writer.println(board.toString());
+		writer.println(mvStack[0].toString());
+		
+		threadLatch.countDown();
 	}
 	
 	/**
@@ -123,6 +162,54 @@ public class BreakthroughPlayer extends BaseBreakthroughPlayer {
 	 * @param depthLimit
 	 * @param alpha
 	 * @param beta
+	 * @param startIndex
+	 * @param endIndex
+	 */
+	public void alphabetaThreaded(BreakthroughState board, int depth, int depthLimit, double alpha, double beta, int startIndex, int endIndex) {
+		boolean toMaximize = (board.getWho() == GameState.Who.HOME);	
+		boolean toMinimize = !toMaximize;
+		boolean isTerminal = isTerminal(board, mvStack[depth], depth, depthLimit);
+		if(isTerminal) {
+			;
+		} else if(depth == depthLimit) {
+			 mvStack[depth].set(0,0,0,0, evalBoard2(board));
+		} else {
+			double bestScore = (board.getWho() == GameState.Who.HOME ? MIN_SCORE: MAX_SCORE);
+			char who = (board.getWho() == GameState.Who.HOME ? BreakthroughState.homeSym : BreakthroughState.awaySym);
+			ArrayList<BreakthroughMove> moves = getMoves(board, who);
+			ScoredBreakthroughMove bestMove = mvStack[depth];
+			ScoredBreakthroughMove nextMove = mvStack[depth+1];
+			bestMove.set(moves.get(0), bestScore);
+			for(int i = startIndex; i < endIndex; i++) {
+				alphabeta(makeMove((BreakthroughState)board.clone(), moves.get(i)), depth + 1, depthLimit, alpha, beta);
+				if(toMaximize && nextMove.score > bestMove.score) {
+					bestMove.set(moves.get(i), nextMove.score);
+				}else if(!toMaximize && nextMove.score < bestMove.score) {
+					bestMove.set(moves.get(i), nextMove.score);
+				}
+				if(toMinimize) {
+					beta = Math.min(bestMove.score, beta);
+					if(bestMove.score <= alpha || bestMove.score == MIN_SCORE) {
+						return;
+					}
+				}else {
+					alpha = Math.max(bestMove.score, alpha);
+					if(bestMove.score >= beta || bestMove.score == MAX_SCORE) {
+						return;
+					}
+				}
+				mvStack[depth] = bestMove;
+			}
+		}
+	}
+	
+	/**
+	 * 
+	 * @param board
+	 * @param depth
+	 * @param depthLimit
+	 * @param alpha
+	 * @param beta
 	 */
 	public void alphabeta(BreakthroughState board, int depth, int depthLimit, double alpha, double beta) {
 		boolean toMaximize = (board.getWho() == GameState.Who.HOME);	
@@ -161,12 +248,40 @@ public class BreakthroughPlayer extends BaseBreakthroughPlayer {
 			}
 		}
 	}
+
 	
 	/**
-	 * 
+	 * TODO: Implement for multithreaded getMove
 	 */
 	public GameMove getMove(GameState state, String lastMove) {
-		alphabeta((BreakthroughState) state, 0, DEPTH_LIMIT, MIN_SCORE, MAX_SCORE);
+		// Set threadLatch to wait for NUM_THREADS threads to complete
+		threadLatch = new CountDownLatch(NUM_THREADS);
+		//alphabeta((BreakthroughState) state, 0, DEPTH_LIMIT, MIN_SCORE, MAX_SCORE);
+		int numMoves = getMoves((BreakthroughState) state, (state.getWho() 
+				== GameState.Who.HOME ? BreakthroughState.homeSym : BreakthroughState.awaySym)).size();
+		// Create threads, set each to run alphabetaMulti on a portion of the top-level moves
+		ThreadedBreakthroughPlayer[] threads = new ThreadedBreakthroughPlayer[NUM_THREADS];
+		for(int i = 0; i < NUM_THREADS; i++){
+			threads[i] = new ThreadedBreakthroughPlayer("Thread", (BreakthroughState) state, i, numMoves);
+			threads[i].run();
+		}
+		// Join the threads, compare to find best score, copy it to this one's movestack
+		try{
+			threadLatch.await();
+		}
+		catch(InterruptedException e){
+			writer.println("Exception waiting on threads to find moves");
+		}
+		
+		double bestScore = threads[0].mvStack[0].score;
+		int bestIndex = 0;
+		for(int i = 0; i < NUM_THREADS; i++){
+			if(board.getWho() == GameState.Who.HOME && threads[i].mvStack[0].score > bestScore) bestIndex = i;
+			else if(board.getWho() == GameState.Who.AWAY && threads[i].mvStack[0].score < bestScore) bestIndex = i;
+		}
+		
+		mvStack[0] = threads[bestIndex].mvStack[0];
+		
 		writer.println(state.toString());
 		writer.println(mvStack[0].toString());
 		return mvStack[0];
@@ -182,7 +297,7 @@ public class BreakthroughPlayer extends BaseBreakthroughPlayer {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		GamePlayer p = new BreakthroughPlayer("Stonewall Jackson");
+		GamePlayer p = new ThreadedBreakthroughPlayer("Stonewall Jackson");
 		p.compete(args);
 		writer.close();
 	}
