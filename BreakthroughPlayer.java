@@ -1,5 +1,6 @@
 package BreakthroughPlayer;
 
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import game.*;
 import breakthrough.*;
@@ -11,6 +12,7 @@ public class BreakthroughPlayer extends BaseBreakthroughPlayer {
 	public final double MAX_SCORE = Double.POSITIVE_INFINITY;
 	public final double MIN_SCORE = Double.NEGATIVE_INFINITY;
 	protected ScoredBreakthroughMove[] mvStack;
+	static PrintWriter writer;
 	
 	/**
 	 * 
@@ -146,12 +148,12 @@ public class BreakthroughPlayer extends BaseBreakthroughPlayer {
 				}
 				if(toMinimize) {
 					beta = Math.min(bestMove.score, beta);
-					if (bestMove.score <= alpha || bestMove.score == MIN_SCORE) {
+					if(bestMove.score <= alpha || bestMove.score == MIN_SCORE) {
 						return;
 					}
-				} else {
+				}else {
 					alpha = Math.max(bestMove.score, alpha);
-					if (bestMove.score >= beta || bestMove.score == MAX_SCORE) {
+					if(bestMove.score >= beta || bestMove.score == MAX_SCORE) {
 						return;
 					}
 				}
@@ -165,6 +167,8 @@ public class BreakthroughPlayer extends BaseBreakthroughPlayer {
 	 */
 	public GameMove getMove(GameState state, String lastMove) {
 		alphabeta((BreakthroughState) state, 0, DEPTH_LIMIT, MIN_SCORE, MAX_SCORE);
+		writer.println(state.toString());
+		writer.println(mvStack[0].toString());
 		return mvStack[0];
 	}
 	
@@ -172,8 +176,14 @@ public class BreakthroughPlayer extends BaseBreakthroughPlayer {
 	 * 
 	 * @param args
 	 */
-	public static void main(String [] args) {
+	public static void main(String[] args) {
+		try {
+			writer = new PrintWriter("openingBook.txt", "UTF-8");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 		GamePlayer p = new BreakthroughPlayer("Stonewall Jackson");
 		p.compete(args);
+		writer.close();
 	}
 }
