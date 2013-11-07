@@ -1,18 +1,24 @@
 package BreakthroughPlayer;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Scanner;
+
 import game.*;
 import breakthrough.*;
 
 public class BreakthroughPlayer extends BaseBreakthroughPlayer {
 	
-	public final int DEPTH_LIMIT = 7;
+	public final int DEPTH_LIMIT = 6;
 	public final int MAX_DEPTH = 50;
 	public final double MAX_SCORE = Double.POSITIVE_INFINITY;
 	public final double MIN_SCORE = Double.NEGATIVE_INFINITY;
 	protected ScoredBreakthroughMove[] mvStack;
 	static PrintWriter writer;
+	File file = new File("openingBook.txt");
+	int numMove;
 	
 	/**
 	 * 
@@ -116,6 +122,25 @@ public class BreakthroughPlayer extends BaseBreakthroughPlayer {
 		return isTerminal;
 	}
 	
+	public void getOpeningBook(BreakthroughState board) {
+		Scanner in = null;
+		try {
+			in = new Scanner(file);
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+		while(in.hasNextLine()) {
+			String state = "";
+			String move = "";
+			for(int i = 0; i < N + 1; i++) {
+				state += in.nextLine();
+				if(i < N)
+					state += "\n";
+			}
+			move = in.nextLine();
+		}
+	}
+	
 	/**
 	 * 
 	 * @param board
@@ -166,9 +191,16 @@ public class BreakthroughPlayer extends BaseBreakthroughPlayer {
 	 * 
 	 */
 	public GameMove getMove(GameState state, String lastMove) {
-		alphabeta((BreakthroughState) state, 0, DEPTH_LIMIT, MIN_SCORE, MAX_SCORE);
-		writer.println(state.toString());
-		writer.println(mvStack[0].toString());
+		/*
+		if(numMove < 8) {
+			writer.println(state.toString());
+			writer.println(mvStack[0].toString());
+		} */
+		if(numMove < 5) {
+			getOpeningBook((BreakthroughState) state);
+		}
+		//else alphabeta((BreakthroughState) state, 0, DEPTH_LIMIT, MIN_SCORE, MAX_SCORE);
+		numMove++;
 		return mvStack[0];
 	}
 	
@@ -178,12 +210,12 @@ public class BreakthroughPlayer extends BaseBreakthroughPlayer {
 	 */
 	public static void main(String[] args) {
 		try {
-			writer = new PrintWriter("openingBook.txt", "UTF-8");
+			//writer = new PrintWriter("openingBook6.txt", "UTF-8");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		GamePlayer p = new BreakthroughPlayer("Stonewall Jackson");
 		p.compete(args);
-		writer.close();
+		//writer.close();
 	}
 }
