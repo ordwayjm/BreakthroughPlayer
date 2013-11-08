@@ -11,13 +11,15 @@ import breakthrough.*;
 
 public class BreakthroughPlayer extends BaseBreakthroughPlayer {
 	
-	public final int DEPTH_LIMIT = 6;
+	public final int DEPTH_LIMIT = 8;
 	public final int MAX_DEPTH = 50;
 	public final double MAX_SCORE = Double.POSITIVE_INFINITY;
 	public final double MIN_SCORE = Double.NEGATIVE_INFINITY;
 	protected ScoredBreakthroughMove[] mvStack;
+	
 	static PrintWriter writer;
-	File file = new File("openingBook.txt");
+	
+	File file = new File("openingBook2.txt");
 	int numMove;
 	
 	/**
@@ -122,23 +124,39 @@ public class BreakthroughPlayer extends BaseBreakthroughPlayer {
 		return isTerminal;
 	}
 	
-	public void getOpeningBook(BreakthroughState board) {
+	/**
+	 * 
+	 * @param board
+	 * @return
+	 */
+	public boolean getOpeningBook(BreakthroughState board) {
 		Scanner in = null;
+		String state = "";
+		String move = "";
 		try {
 			in = new Scanner(file);
 		} catch (FileNotFoundException e) {
-			e.printStackTrace();
+			return false;
 		}
 		while(in.hasNextLine()) {
-			String state = "";
-			String move = "";
+			state = "";
+			move = "";
 			for(int i = 0; i < N + 1; i++) {
 				state += in.nextLine();
 				if(i < N)
 					state += "\n";
 			}
 			move = in.nextLine();
+			if(state.equals(board.toString())) {
+				System.out.println("MATCH");
+				mvStack[0].set(Integer.parseInt(move.substring(0,1)), Integer.parseInt(move.substring(2,3)), 
+									Integer.parseInt(move.substring(4,5)), Integer.parseInt(move.substring(6,7)), 0);
+				in.close();
+				return true;
+			}
 		}
+		in.close();
+		return false;
 	}
 	
 	/**
@@ -197,9 +215,13 @@ public class BreakthroughPlayer extends BaseBreakthroughPlayer {
 			writer.println(mvStack[0].toString());
 		} */
 		if(numMove < 5) {
-			getOpeningBook((BreakthroughState) state);
+			System.out.println("Checking Move Book...");
+			if(!getOpeningBook((BreakthroughState) state)) {
+				System.out.println("...doing AlphaBeta instead.");
+				alphabeta((BreakthroughState) state, 0, DEPTH_LIMIT, MIN_SCORE, MAX_SCORE);
+			}
 		}
-		//else alphabeta((BreakthroughState) state, 0, DEPTH_LIMIT, MIN_SCORE, MAX_SCORE);
+		else alphabeta((BreakthroughState) state, 0, DEPTH_LIMIT, MIN_SCORE, MAX_SCORE);
 		numMove++;
 		return mvStack[0];
 	}
@@ -209,11 +231,12 @@ public class BreakthroughPlayer extends BaseBreakthroughPlayer {
 	 * @param args
 	 */
 	public static void main(String[] args) {
+		/*
 		try {
-			//writer = new PrintWriter("openingBook6.txt", "UTF-8");
+			writer = new PrintWriter("openingBook6.txt", "UTF-8");
 		} catch (Exception e) {
 			e.printStackTrace();
-		}
+		} */
 		GamePlayer p = new BreakthroughPlayer("Stonewall Jackson");
 		p.compete(args);
 		//writer.close();
