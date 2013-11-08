@@ -11,7 +11,7 @@ import breakthrough.*;
 
 public class BreakthroughPlayer extends BaseBreakthroughPlayer {
 	
-	public final int DEPTH_LIMIT = 8;
+	public final int DEPTH_LIMIT = 7;
 	public final int MAX_DEPTH = 50;
 	public final double MAX_SCORE = Double.POSITIVE_INFINITY;
 	public final double MIN_SCORE = Double.NEGATIVE_INFINITY;
@@ -19,7 +19,7 @@ public class BreakthroughPlayer extends BaseBreakthroughPlayer {
 	
 	static PrintWriter writer;
 	
-	File file = new File("openingBook2.txt");
+	File file = new File("openingBook10.txt");
 	int numMove;
 	
 	/**
