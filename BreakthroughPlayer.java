@@ -23,15 +23,15 @@ public class BreakthroughPlayer extends BaseBreakthroughPlayer {
 	int numMove;
 	
 	/**
-	 * 
-	 * @param n
+	 * Constructor for BreakthroughPlayer. Takes a String name and is passed to the BaseBreakthroughPlayer.
+	 * @param n name of BreakthroughPlayer
 	 */
 	public BreakthroughPlayer(String n) {
 		super(n, false);
 	}
 	
 	/**
-	 * 
+	 * Initializes mvStack to empty ScoredBreakthroughMoves
 	 */
 	public void init() {
 		mvStack = new ScoredBreakthroughMove[MAX_DEPTH];
@@ -41,12 +41,12 @@ public class BreakthroughPlayer extends BaseBreakthroughPlayer {
 	}
 	
 	/**
-	 * 
-	 * @param board
-	 * @param who
-	 * @return
+	 * Gets a list of moves that are possible with the current board
+	 * @param board current board
+	 * @param who the current player who's turn it is
+	 * @return an ArrayList of possible BreakthroughMoves
 	 */
-	public ArrayList <BreakthroughMove> getMoves(BreakthroughState board, char who) {
+	public ArrayList<BreakthroughMove> getMoves(BreakthroughState board, char who) {
 		ArrayList<BreakthroughMove> moves = new ArrayList<BreakthroughMove>();
 		for(int i = 0; i < N; i++){
 			for(int j = 0; j < N; j++){
@@ -68,14 +68,14 @@ public class BreakthroughPlayer extends BaseBreakthroughPlayer {
 	}
 	
 	/**
-	 * 
-	 * @param board
-	 * @param who
-	 * @param r1
-	 * @param c1
-	 * @param r2
-	 * @param c2
-	 * @return
+	 * Checks to see if a BreakthroughMove is possible to make on the current board
+	 * @param board the current board
+	 * @param who the current player who's turn it is
+	 * @param r1 start row of the BreakthroughMove
+	 * @param c1 start col of the BreakthroughMove
+	 * @param r2 end row of the BreakthroughMove
+	 * @param c2 end col of the BreakthroughMove
+	 * @return true if the move is possible, false otherwise
 	 */
 	public boolean possibleMove(BreakthroughState board, char who, int r1, int c1, int r2, int c2){
 		// Not possible if any index is off the board
@@ -93,10 +93,10 @@ public class BreakthroughPlayer extends BaseBreakthroughPlayer {
 	}
 	
 	/**
-	 * 
-	 * @param board
-	 * @param move
-	 * @return
+	 * Makes a BreakthroughMove on the current board, returns a copy of the board
+	 * @param board the current Breakthrough board
+	 * @param move the BreakthroughMove to be made
+	 * @return the BreakthroughBoard after the move has been applied
 	 */
 	public BreakthroughState makeMove(BreakthroughState board, BreakthroughMove move) {
 		BreakthroughState brd = board;
@@ -105,14 +105,12 @@ public class BreakthroughPlayer extends BaseBreakthroughPlayer {
 	}
 	
 	/**
-	 * 
-	 * @param board
-	 * @param move
-	 * @param depth
-	 * @param depthLimit
-	 * @return
+	 * Determines if the current BreakthroughBoard is the end of the game
+	 * @param board the current BreakthroughBoard
+	 * @param move current move being made
+	 * @return true if the board is terminal, false otherwise
 	 */
-	public boolean isTerminal(BreakthroughState board, ScoredBreakthroughMove move, int depth, int depthLimit) {
+	public boolean isTerminal(BreakthroughState board, ScoredBreakthroughMove move) {
 		GameState.Status status = board.getStatus();
 		boolean isTerminal = true;
 		if(status == GameState.Status.HOME_WIN) {
@@ -125,9 +123,9 @@ public class BreakthroughPlayer extends BaseBreakthroughPlayer {
 	}
 	
 	/**
-	 * 
-	 * @param board
-	 * @return
+	 * Gets a starting move from the opening book file if there is one available
+	 * @param board the current BreakthroughBoard
+	 * @return true if a move was found, false otherwise
 	 */
 	public boolean getOpeningBook(BreakthroughState board) {
 		Scanner in = null;
@@ -160,17 +158,17 @@ public class BreakthroughPlayer extends BaseBreakthroughPlayer {
 	}
 	
 	/**
-	 * 
-	 * @param board
-	 * @param depth
-	 * @param depthLimit
-	 * @param alpha
-	 * @param beta
+	 * AlphaBeta search to determine the best possible move to make with the current BreakthroughState
+	 * @param board the current BreakthroughState
+	 * @param depth the current depth of the search
+	 * @param depthLimit the deepest the search can go to
+	 * @param alpha best min value seen
+	 * @param beta best max value seen
 	 */
 	public void alphabeta(BreakthroughState board, int depth, int depthLimit, double alpha, double beta) {
 		boolean toMaximize = (board.getWho() == GameState.Who.HOME);	
 		boolean toMinimize = !toMaximize;
-		boolean isTerminal = isTerminal(board, mvStack[depth], depth, depthLimit);
+		boolean isTerminal = isTerminal(board, mvStack[depth]);
 		if(isTerminal) {
 			;
 		} else if(depth == depthLimit) {
@@ -206,7 +204,7 @@ public class BreakthroughPlayer extends BaseBreakthroughPlayer {
 	}
 	
 	/**
-	 * 
+	 * Sends the current move to be played to the tournament
 	 */
 	public GameMove getMove(GameState state, String lastMove) {
 		/*
@@ -227,7 +225,7 @@ public class BreakthroughPlayer extends BaseBreakthroughPlayer {
 	}
 	
 	/**
-	 * 
+	 * Main method. Called by the tournament to start the BreakthroughPlayer
 	 * @param args
 	 */
 	public static void main(String[] args) {
